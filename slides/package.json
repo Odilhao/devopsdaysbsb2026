@@ -1,0 +1,15 @@
+{
+  "name": "devopsdaysbsb2026-slides",
+  "private": true,
+  "scripts": {
+    "lint": "tahta-lint slides.en.md && tahta-lint slides.pt-BR.md",
+    "build": "slidev build slides.en.md --out dist/en --base \"${SLIDES_BASE:-/}en/\" && slidev build slides.pt-BR.md --out dist/pt-BR --base \"${SLIDES_BASE:-/}pt-BR/\"",
+    "export": "slidev export slides.en.md --output export/devopsdaysbsb2026-en.pdf --timeout 120000 && slidev export slides.pt-BR.md --output export/devopsdaysbsb2026-pt-BR.pdf --timeout 120000"
+  },
+  "dependencies": {
+    "@slidev/cli": "^52.10.0",
+    "echarts": "^5.6.0",
+    "playwright-chromium": "^1.57.0",
+    "slidev-theme-tahta": "^0.13.4"
+  }
+}

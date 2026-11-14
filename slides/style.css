@@ -1,0 +1,65 @@
+/* Brand layer on top of tahta's `boardroom` variant, matching the claude.ai deck
+   (AGENTS.md design notes): IBM Plex Sans + JetBrains Mono, dark #14181F, light #FCFCFB,
+   orange #EB6834, blue #2A78D6, body text #B8C0CC on dark.
+   Only tokens are overridden; layouts stay the theme's. `html:root` outranks the theme's `:root`. */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+html:root[data-variant='boardroom'] {
+  --ink: #14181f;
+  --ink-2: #1c222c;
+  --line: #2e3644;
+  --fg: #fcfcfb;
+  --fg-dim: #b8c0cc;
+  --font-display: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --cat-1: #eb6834;
+  --cat-2: #2a78d6;
+  --code-bg: #10141a;
+  --chart-muted: #3a4352;
+}
+
+/* Two colors only, like the reference deck: orange for emphasis, blue for big numbers. */
+html:root[data-variant='boardroom'] {
+  --cat-3: #eb6834;
+  --cat-4: #2a78d6;
+  --cat-5: #b8c0cc;
+  --info: #2a78d6;
+  --warn: #eb6834;
+  --bad: #eb6834;
+}
+
+/* Light slides (frontmatter `class: light`): the reference's cream content slides.
+   Background #F1EFE9, cards #FCFCFB, ink #14181F, body #4A5260, orange text #B4461C. */
+.slidev-layout.light,
+.light .slidev-layout {
+  --ink: #f1efe9;
+  --ink-2: #fcfcfb;
+  --line: #dedad1;
+  --fg: #14181f;
+  --fg-dim: #4a5260;
+  --accent: #b4461c;
+  --accent-deep: #8f3714;
+  --on-accent: #fcfcfb;
+  --cat-1: #b4461c;
+  --cat-2: #2a78d6;
+  --cat-3: #b4461c;
+  --cat-4: #2a78d6;
+  --cat-5: #b4461c;
+  --info: #2a78d6;
+  --warn: #b4461c;
+  --bad: #b4461c;
+  --surface-bg: #fcfcfb;
+  --surface-border: 1px solid #e2ded5;
+  --surface-shadow: none;
+  --code-bg: #fcfcfb;
+  --chart-muted: #c9c8c1;
+  --glow: none;
+  background-color: var(--ink);
+  color: var(--fg);
+}
+
+/* two-cols: let the grid span the whole frame, so the columns line up with the title
+   (the theme shrink-wraps it and, when it has to scale the content down, scales around the center,
+   which pushes the left column away from the title). */
+.fit-inner:has(> .two-cols) { width: 100%; transform-origin: top left; }

@@ -1,0 +1,79 @@
+# Numbers that come from articles, not from scripts.
+# Every value here must have a `source` (URL in links.md) and, where possible, the `quote` it came from.
+# Templates read these as n.art.<group>.<key>. Re-check the source pages before each refresh (AGENTS.md §2).
+# status: read = primary page read · coverage = secondary coverage only (say so on the slide)
+
+railway:
+  source: https://blog.railway.com/p/incident-report-october-security-incident
+  status: read
+  accessed: 2026-11-13
+  workspaces_pct: 1.85        # "at most 1.85% of workspaces, about 100,000"
+  workspaces: 100000
+  builds_read: 353
+  users_tokens: 1852
+  spend_usd: 740000           # "estimated to reach ~$740,000"
+  detect_hours: 6.5           # exploit 07:28 UTC -> page 13:58 UTC, Oct 20
+  quote_target: "we believe the attacker was specifically targeting AI provider credentials"
+  quote_speed: "The escalating situation became a contest of agent speed"
+
+wiz_black_october:
+  source: https://www.wiz.io/blog/black-october-for-ai-developer-platforms
+  status: read
+  accessed: 2026-11-13
+  platforms: 9                # "At least nine AI Developer Platforms have disclosed incidents"
+  bedrock_calls_a: 800000
+  bedrock_calls_b: 1700000
+  usage_usd: 100000           # "likely ran up over $100k in usage"
+  quote_hunt: "explicitly hunting stored environment variables, with a focus on those granting AI access."
+
+wfx_loot:
+  source: https://www.aikido.dev/blog/compromised-github-accounts-push-ci-secret-stealer-to-tens-of-thousands-of-repositories
+  source_2: https://www.chainguard.dev/unchained/wfx-loot-stolen-github-tokens-pushed-a-ci-secret-stealer-into-60-000-repositories-november-2026
+  status: read
+  accessed: 2026-11-13
+  accounts: 4837
+  repos_probed: 61764
+  repos_ran: 1806             # Aikido body text; its summary says 1,835
+  publishers: 50
+  quote_rotation: "Rotating secrets alone does not remove a trust policy or a federated credential."
+
+binance:
+  source: https://www.coindesk.com/business/2026/11/03/binance-s-usd6-3-billion-hack-began-with-a-fake-job-interview-exchange-says
+  source_2: https://www.coindesk.com/tech/2026/10/30/binance-uncovers-wider-breach-in-usd6-3-billion-exploit-targets-sunday-withdrawal-restart
+  status: coverage            # press relaying a Binance media briefing; no published post-mortem
+  accessed: 2026-11-13
+  loss_usd_bn: 6.3
+  frozen_usd_bn: 2.85
+  quote_laptop: "a compromised laptop belonging to a DevOps engineer"
+
+sshhole:
+  source: https://sshhole.com/
+  status: read
+  accessed: 2026-11-13
+  test_logins: 17600          # "like 17,600 weird logins"
+  musl_cap_bytes: 256
+  pw_min: 257
+  pw_max: 1024
+  quote_agents: "i had agent swarms. a lot of them. let's not get into it"
+
+kernel_98432:
+  source: https://www.anthropic.com/research/discovering-vulnerabilities-with-claude
+  status: read
+  leak_min: 48
+  root_min: 5
+
+php2shell:
+  source: https://thephp.foundation/blog/2026/10/21/todays-php-security-release-and-how-were-strengthening-php-security/
+  status: read
+  early_hours: 6              # fixed images at 07:41 UTC vs agreed 14:00 UTC
+
+discovery:
+  source: https://blog.mozilla.org/en/privacy-security/ai-security-zero-day-vulnerabilities/
+  source_2: https://aisle.com/blog/aisle-year-on-the-cyber-frontier
+  status: read
+  mozilla_before: 22
+  mozilla_after: 271
+  aisle_openssl: 20
+  aisle_openssl_total: 23
+  curl_valid_pct: 5
+  github_reports_week: 3000

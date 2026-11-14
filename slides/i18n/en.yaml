@@ -1,0 +1,311 @@
+# English text for slides/deck.md.j2. Strings may embed Jinja:
+#   n.<group> = data (see scripts/build_slidev.py load_data), n.art.<group> = data/manual/article_facts.yaml
+#   filters: num(places), pct(places) for 0..1 shares, month('2026-10'), day('2026-11-09')
+# Quote any value with {{ … }} or ": " in single quotes; double a literal apostrophe ('').
+
+cover:
+  kicker: 'Made for DevOpsDays Brasília 2026 · devopsdaysbsb.com.br'
+  title: Fighting Fire with Fire
+  subtitle: 'How AI and LLMs change the DevOps engineer''s day with CVEs and incidents · charts updated {{ n.cut | day }}, {{ n.cut.year }}'
+  notes: |
+    These slides were created for DevOpsDays Brasília 2026 (https://devopsdaysbsb.com.br/). Every number is rendered from public data by a CI build; the charts were refreshed on {{ n.cut | day }}, {{ n.cut.year }}.
+    This year the CVE pipe burst. Three parts: the wave, the engineering decisions that make fixes fast, and the people side.
+
+whoami:
+  title: 'whoami: <em>Odilon Junior</em>'
+  tags: [RHCSA, CKA, CKS, RHCSCK, RHCSOA, DevOps since 2013]
+  bullets:
+    - 'Package and container breaker on the Foreman Project'
+    - 'Used to be RHCSA · CKA · CKS · RHCSCK · RHCSOA. Now: a relay between production, my laptop and LLMs on <a href="https://pi.dev/">pi.dev</a>'
+    - 'Brasília is small: I probably worked with someone who worked with someone who knows you'
+  terminal:
+    - { cmd: whoami }
+    - { out: 'odilon, DevOps since 2013' }
+    - { cmd: ls ~/old-badges }
+    - { out: 'RHCSA  CKA  CKS  RHCSCK  RHCSOA' }
+    - { cmd: ps aux | grep relay }
+    - { out: 'odilon  production <-> laptop <-> LLMs (pi.dev)' }
+    - { cmd: mutual-friends --city brasilia }
+    - { out: 'someone who worked with someone who knows you' }
+  links:
+    - { label: 'linkedin.com/in/odilonjunior', url: 'https://www.linkedin.com/in/odilonjunior/' }
+    - { label: 'github.com/Odilhao', url: 'https://github.com/Odilhao' }
+    - { label: 'odilon.dev', url: 'https://odilon.dev/' }
+  foot: Odilon Junior
+  notes: |
+    Quick intro, then straight to the numbers. Find me after the talk: LinkedIn, GitHub and the blog are on the last slide too.
+    Brasília is small: there is a good chance we share a friend of a friend.
+
+act1: { kicker: Part one, title: The wave, subtitle: What changed in 2026 }
+
+hook:
+  kicker: CVE.org · CNA CVSS ≥ 9.0
+  title: Three months, more <em>Critical</em> CVEs than all of 2025
+  series: Critical CVEs
+  note: 'Aug–Oct 2026: <strong>{{ n.crit.critical_aug_oct_2026 | num }}</strong> Critical vs {{ n.crit.critical_2025_full_year | num }} in all of 2025. Sep + Oct alone ({{ n.crit.critical_sep_oct_2026 | num }}) > 2018–2022 combined ({{ n.crit.critical_2018_to_2022_sum | num }}).'
+  foot: 'Source: CVE.org cvelistV5 · cve_monthly_critical.csv, cve_critical_checks.csv · data as of {{ n.cut | day }} · includes current month to date'
+  notes: |
+    Fact-check what's going around: Sep + Oct is NOT "more Critical CVEs than all of history".
+    CNA-scored Critical before Sep 2026: {{ n.crit.critical_all_before_sep_2026 | num }}; NVD counts {{ n.nvd.all_time.nvd_cvss3_critical | num }} all-time.
+    Part of the jump is better scoring: the share of CVEs with a CNA score went from ~60% (2023) to ~79% (2026).
+
+glossary:
+  kicker: "Before the numbers"
+  title: "The vocabulary of this talk"
+  foot: "Sources: cve.org · cisa.gov/known-exploited-vulnerabilities-catalog · first.org/epss · first.org/cvss"
+  terms:
+    - { title: CVE, desc: "Common Vulnerabilities and Exposures: the ID of a public vulnerability." }
+    - { title: CNA, desc: "CVE Numbering Authority: GitHub, Microsoft, the Linux kernel (since 2024)…" }
+    - { title: CVSS, desc: "Common Vulnerability Scoring System: 0–10 severity, not real risk." }
+    - { title: KEV, desc: "Known Exploited Vulnerabilities: CISA's list of confirmed exploitation." }
+    - { title: EPSS, desc: "Exploit Prediction Scoring System: chance of exploitation in 30 days." }
+    - { title: VEX, desc: "Vulnerability Exploitability eXchange: vendor says affected or not." }
+  notes: |
+    Vocabulary before the numbers. A CNA issues CVE IDs: GitHub, Microsoft, VulnCheck and, since February 2024, the Linux kernel itself, which explains much of the 2024 jump.
+    CVSS says how bad a bug is technically, not whether anyone is exploiting it. For that: KEV (confirmed exploitation) and EPSS (probability in the next 30 days).
+    VEX is what cuts scanner noise. Remember KEV and EPSS: they come back on the signals slide.
+
+curve:
+  kicker: Industry-wide
+  title: It hits every CNA, and it reaches <em>your</em> stack
+  foot: 'Sources: CVE.org cvelistV5, CISA KEV · cve_yearly.csv, kev_yearly.csv, cve_critical_checks.csv · data as of {{ n.cut | day }}'
+  stats:
+    - { value: '{{ n.cve[n.cut.year].ytd | num }}', label: 'CVEs published Jan 1 → {{ n.cut | day }}', icon: "lucide:layers", tone: info }
+    - { value: '{{ n.hl.cve_ytd_ratio_vs_prev_year | num(2) }}', unit: "×", label: 'vs the same period of {{ n.cut.year - 1 }}', tone: warn }
+    - { value: '{{ n.crit.critical_ytd_current_year | num }}', label: 'Critical CVEs (CNA CVSS ≥ 9.0) in {{ n.cut.year }}', tone: bad }
+    - { value: '{{ n.kev[n.cut.year].ytd | num }}', label: 'CISA KEV additions, same period', tone: warn }
+  notes: |
+    Full {{ n.cut.year - 1 }} had {{ n.cve[n.cut.year - 1].full | num }} CVEs; we are at {{ n.cve[n.cut.year].ytd | num }} with weeks to go.
+    Much of the recent work is AI-assisted: security researchers and consultants investigating with AI, not "found by AI" alone.
+    Caveat: part of the growth is cataloging and backfill (GitHub, VulnCheck CNAs).
+
+
+bottleneck:
+  kicker: The bottleneck moved
+  title: Finding got cheap. <em>Fixing</em> didn't.
+  label: but
+  left:
+    title: Finding
+    items:
+      - 'Mozilla: {{ n.art.discovery.mozilla_before }} → {{ n.art.discovery.mozilla_after }} bugs with a newer model'
+      - 'AISLE: {{ n.art.discovery.aisle_openssl }} of {{ n.art.discovery.aisle_openssl_total }} OpenSSL zero-days'
+      - 'sshole: agent swarms, ~{{ n.art.sshhole.test_logins | num }} test logins'
+  right:
+    title: Fixing
+    items:
+      - 'curl: valid reports < {{ n.art.discovery.curl_valid_pct }}%'
+      - 'GitHub: {{ n.art.discovery.github_reports_week | num }}+ reports a week'
+  foot: 'Sources: Mozilla, AISLE, sshhole.com, GitHub (see README)'
+  notes: |
+    The sshole finder built sshd every way (glibc or musl, with or without PAM) and sent about {{ n.art.sshhole.test_logins | num }} strange logins.
+    Every build agreed except musl without PAM. That is the new shape of a find: cheap, parallel, differential.
+
+act2: { kicker: Part two, title: Engineering decisions, subtitle: Make the next fix fast and the exposure small }
+
+signals:
+  kicker: CVSS · GitHub · EPSS · KEV
+  title: One CVE, <em>four</em> answers
+  head: [CVE, CNA CVSS, GitHub, EPSS, KEV]
+  no_record: no record
+  not_in_kev: "—"
+  cases:
+    - { cve: CVE-2026-123158, label: "OpenSSH sshole" }
+    - { cve: CVE-2026-115731, label: "OpenVox / Puppet RCE" }
+    - { cve: CVE-2026-111497, label: "Brotli" }
+    - { cve: CVE-2026-98432, label: "Linux TCP" }
+    - { cve: CVE-2026-102895, label: "GPUStack" }
+  callout: Your <strong>exposure</strong> decides, not the score. KEV is the floor, not the ceiling.
+  foot: 'Sources: CVE.org, GitHub Advisory API, FIRST EPSS, CISA KEV · case_study_signals.csv · data as of {{ n.cut | day }}'
+  notes: |
+    Glossary in one breath: CVE = the ID, CNA = who assigns it, CVSS = severity score, KEV = known exploited, EPSS = probability of exploitation in 30 days, VEX = "affected or not" per product.
+    sshole: high score and in KEV, yet builds with glibc + PAM are not affected. Only musl without PAM: Alpine and friends.
+    GitHub is a CNA too, and its advisory gives the upstream fixed version (gpustack {{ n.case["CVE-2026-102895"].github_packages.split("-> ")[-1] }}). Pull both: scripts/fetch_case_studies.py.
+
+exploitation:
+  kicker: CISA KEV
+  title: 'Exploitation: smaller, but <em>faster</em>'
+  series: Added within 7 days
+  note: 'KEV +{{ n.hl.kev_ytd_growth_pct | num }}% vs CVEs +{{ n.hl.cve_ytd_growth_pct | num }}% (same period). Share of KEV entries added within 7 days of publication, by CVE year.'
+  foot: 'Source: CISA KEV + CVE.org · kev_yearly.csv, kev_time_to_exploit.csv · data as of {{ n.cut | day }}'
+  notes: |
+    KEV {{ n.kev[n.cut.year - 1].ytd | num }} → {{ n.kev[n.cut.year].ytd | num }}. Exploitation grows much slower than volume, but what gets exploited gets exploited fast.
+    The {{ n.cut.year }} share is an upper bound: those CVEs have had less time to be added later.
+
+kernel:
+  kicker: Linux CVE-2026-98432 · over the network
+  title: A model wrote a remote root. <em>Mitigate</em> first.
+  events:
+    - { date: Oct 1, title: Upstream fix, desc: IPv4 TCP handshake UAF }
+    - { date: Oct 15, title: 'CVE, CVSS {{ n.case["CVE-2026-98432"].cna_cvss | num(1) }}', desc: packets with IP options }
+    - { date: Oct 27, title: Anthropic post, desc: 'Claude: {{ n.art.kernel_98432.leak_min }} + {{ n.art.kernel_98432.root_min }} min to root' }
+    - { date: Oct 30, title: Vendor bulletin, desc: Critical + nftables rule }
+    - { date: Nov 2, title: Bulletin update, desc: 'MPTCP not required; pod-to-pod not filtered' }
+  foot: 'Sources: kernel commit e3f33b0a1d89, Anthropic, vendor security bulletin · case_study_signals.csv'
+  notes: |
+    Reachable by anyone who can open a TCP connection. A lost race only fails the handshake, so the attacker retries.
+    Not in KEV; EPSS {{ n.case["CVE-2026-98432"].epss | pct(1) }}. The nftables drop sits at the host edge, so it does not cover pod-to-pod traffic.
+
+mitigate:
+  kicker: Buy time, safely
+  title: Mitigate today, <em>patch</em> when the fix is right
+  panels:
+    - { icon: "lucide:network", title: Linux TCP, items: ["nftables: drop IPv4 TCP with IP options", "Host edge only, not pod-to-pod"] }
+    - { icon: "lucide:key-round", title: OpenSSH sshole, items: ["Disable password logins (or use PAM)", "Find musl / Alpine base images"] }
+    - { icon: "lucide:server-cog", title: OpenVox / Puppet, items: ["No autosign without verification", "Patch the agent, not only the OS"] }
+    - { icon: "lucide:file-warning", title: Ruby · Pillow, items: ["Never compile a regex from user input", "No untrusted EPS / Ghostscript"] }
+  foot: 'Sources: vendor bulletin (kernel), sshhole.com, OpenVox, Ruby, Pillow (see README)'
+  notes: |
+    A rushed fix can break the fleet. A tested, removable mitigation buys the days a good fix needs. Know where each one stops.
+    OpenVox: report deserialization RCE, CVSS {{ n.case["CVE-2026-115731"].cna_cvss | num(1) }} on the CNA record. The Puppet server is the CA for every managed host.
+
+bundled:
+  kicker: Dependencies
+  title: Their CVE is <em>your</em> CVE
+  columns:
+    - { title: Ruby via GitLab, items: ["GitLab RCE, CVSS 10.0", "The fix is a Ruby patch", "Every Ruby app inherits it"] }
+    - { title: Brotli everywhere, items: ["Node, .NET, Envoy, Python wheels", "Pillow 13.0.0 bundles 1.2.0", '{{ n.scan[("docker.io_library_node_20","trivy")] | num }} vs {{ n.scan[("docker.io_library_node_20","grype")] | num }} CVEs, same image'] }
+    - { title: musl in your images, items: ["sshole hits Alpine, OpenWrt, Yocto", "glibc + PAM builds: not affected", "Your base image decides"] }
+  foot: 'Sources: GitLab, Ruby, Node.js, Pillow #10337, sshhole.com · scanner_comparison.csv'
+  notes: |
+    Two scanners on node:20 disagree by an order of magnitude. A vendored libbrotlidec only shows up if the scanner looks inside the wheel.
+
+puppet:
+  kicker: OpenVox / Puppet · the agent ships its own runtime, so we patch it
+  title: Your OS update doesn't reach a <em>vendored</em> runtime
+  tagline: 2026, and we still fight over static vs dynamic binaries.
+  events:
+    - { date: Nov 2024, title: Binaries go private, desc: 'Perforce: new Puppet packages to a "private, hardened" location, 25 free nodes' }
+    - { date: 2025, title: OpenVox, desc: "Community builds its own packages: Ruby, OpenSSL, curl, CA stores" }
+    - { date: Oct 21, title: openvox 8.31.1, desc: "Own OpenSSL + Java trust stores drop 3 leaked eMudhra CAs" }
+    - { date: Oct 29, title: openvox 8.31.2, desc: "Ruby regex backport by Eric Helms (#321) + OpenSSL 3.0 patches" }
+    - { date: Nov 3, title: openvox 8.32.0, desc: 'Report RCE fixed (CVSS {{ n.case["CVE-2026-115731"].cna_cvss | num(1) }})' }
+  foot: 'Sources: Puppet blog, Vox Pupuli, OpenVox releases (see README)'
+  notes: |
+    The Puppet server is the CA for every managed host, so an RCE there reaches every node it manages.
+    The agent package vendors its own runtime. When eMudhra's keys leaked, updating the OS ca-certificates did not touch the agent's trust store; OpenVox had to ship its own (8.31.1, Oct 21: "This release updates the openssl and Java trust store").
+    Ruby: Eric Helms backported Ruby 3.3.13's regex fixes into the agent's bundled Ruby 3.2.11 (puppet-runtime #321, merged Oct 28); the OpenSSL 3.0 patches are #322. Shipped in openvox 8.31.2.
+    Same for Ruby: the regex CVEs are fixed by updating the agent, not the OS ruby package.
+    After Perforce took the binaries private (Nov 2024), the community owns that runtime, including an OpenSSL 3.0 that is end-of-life upstream ("please update to openvox-agent 9").
+    Lesson: every vendored runtime is a second patch stream. Inventory it, and know who builds it.
+
+rollout:
+  kicker: Before the next CVE
+  title: Decisions that make the <em>next</em> fix fast
+  steps:
+    - { title: Know, desc: "SBOM that sees bundled copies; glibc vs musl inventory", icon: "lucide:scan-search" }
+    - { title: Rebuild, desc: "One pipeline rebuilds every image from a patched base", icon: "lucide:hammer" }
+    - { title: Stage, desc: "Canary, staged rollout, rollback", icon: "lucide:git-branch" }
+    - { title: Mitigate as code, desc: "nftables, sshd drop-ins: reviewed, removable", icon: "lucide:shield" }
+    - { title: Prioritize, desc: "Exposure + KEV + EPSS, not CVSS alone", icon: "lucide:list-ordered" }
+  foot: Fighting Fire with Fire
+  notes: |
+    None of this is new. What changed is the volume: if a rebuild needs a person, you will not keep up.
+
+embargo:
+  kicker: Coordinated disclosure
+  title: Ready at the lift, <em>never</em> before
+  columns:
+    - { title: How a project does it, items: ["Tell downstream vendors: day X, one undisclosed CVE", "Patches ready at the embargo drop", "Hotfixes until the release machinery runs"] }
+    - { title: PHP2Shell, items: ["IDs leaked, release moved up", 'One vendor shipped ~{{ n.art.php2shell.early_hours }} h early', "Trust burned for the next report"] }
+    - { title: For DevOps, items: ["Pre-build and pre-test under embargo", "Publish at the lift"] }
+  foot: 'Source: PHP Foundation security release post (see README)'
+  notes: |
+    An embargo is a short, defined window for preparing defenses.
+    A maintainer's practice: tell the vendors and products built on your project that on day X we will release one not-yet-disclosed CVE, and that patches will be ready at the embargo drop. Next slide: what "ready" means.
+
+liftday:
+  kicker: Embargo lift
+  title: Lift day is a <em>pipeline</em>, not a patch
+  steps:
+    - { title: Notify, desc: "Downstream vendors and products: day X, one undisclosed CVE", icon: "lucide:megaphone" }
+    - { title: Hotfix, desc: "Patch out as a hotfix at the drop, easy to apply", icon: "lucide:bandage" }
+    - { title: Package, desc: "Built the way we distribute it", icon: "lucide:package" }
+    - { title: Sign, desc: "GPG keys owned and trusted by the project", icon: "lucide:signature" }
+    - { title: Regress, desc: "Full CI again; locally, an agent swarm mimics it in containers", icon: "lucide:bot" }
+  foot: "A maintainer's practice"
+  notes: |
+    It is not only about releasing the patch. Before the drop we notify downstream vendors and products built on the project: on day X there will be one undisclosed CVE, with patches ready at the drop.
+    We make the patch available as a hotfix, so people can remediate before the release machinery is running.
+    Then it has to be packaged the way we distribute it, signed with GPG keys the project owns and users trust, and run through the regression pipelines, even though we already validated internally and locally.
+    AI angle: LLMs made the local part cheap. We can spawn a swarm of agents that mimics Jenkins / GitHub Actions locally, in containers, before anything touches the public CI.
+
+act3: { kicker: Part three, title: People are the perimeter, subtitle: "Credentials, laptops and the conversation" }
+
+blackoctober:
+  kicker: 'Black October · ≥ {{ n.art.wiz_black_october.platforms }} AI dev platforms · Railway'
+  title: They came for the <em>AI keys</em>
+  steps:
+    - { title: Build escape, desc: "Unknown bug in build VM isolation", icon: "lucide:box" }
+    - { title: Build credential, desc: "Trusted by Temporal → internal monorepo", icon: "lucide:key" }
+    - { title: OIDC misconfig, desc: "Erroneous binding = cloud foothold", icon: "lucide:cloud" }
+    - { title: KMS decrypt, desc: 'Env vars of ≤ {{ n.art.railway.workspaces_pct | num(2) }}% of workspaces', icon: "lucide:lock-open" }
+    - { title: Keys resold, desc: '~${{ n.art.railway.spend_usd | num }} spent; detected after ~{{ n.art.railway.detect_hours | num(1) }} h', icon: "lucide:badge-dollar-sign" }
+  foot: 'Sources: Railway incident report (Nov 10), Wiz "Black October"'
+  notes: |
+    Railway: "{{ n.art.railway.quote_target }}". And: "{{ n.art.railway.quote_speed }}".
+    Wiz: attackers were "{{ n.art.wiz_black_october.quote_hunt }}"
+    Lessons: one ephemeral VM per build; short-lived, narrow credentials; audit every decrypt; alert on anomalous API use.
+
+wfxloot:
+  kicker: wfx-loot · from Nov 10
+  title: One stolen token each. <em>Rotation is not cleanup.</em>
+  stats:
+    - { value: '{{ n.art.wfx_loot.accounts | num }}', label: hijacked GitHub accounts, tone: bad }
+    - { value: '{{ n.art.wfx_loot.repos_probed | num }}', label: repositories probed, tone: warn }
+    - { value: '{{ n.art.wfx_loot.repos_ran | num }}', label: repos ran the stealer, tone: bad }
+  foot: 'Sources: Aikido, Chainguard (Nov 12)'
+  notes: |
+    Steals CI secrets, cloud credentials and AI tool credentials (Claude, Cursor, Codex…).
+    Chainguard: "{{ n.art.wfx_loot.quote_rotation }}" Check AWS trust policies, Azure federated credentials, forged status checks.
+    Agent configs are code: review them like CI.
+
+binance:
+  kicker: Binance · Oct 29
+  title: '${{ n.art.binance.loss_usd_bn | num(1) }}B started with a <em>job interview</em>'
+  aside: press coverage
+  events:
+    - { date: Jun, title: Tampered Homebrew package, desc: '"while searching for an AI tool"' }
+    - { date: Sep, title: Fake job interview, desc: "coding task → malware past EDR" }
+    - { date: Oct 20, title: Internal AI tool, desc: reached 2 wallet engineers }
+    - { date: Oct 29, title: Container + script, desc: "EIP-7702: one signed authorization lets contract code act as the hot wallet" }
+    - { date: Oct 30, title: Contained 00:10 UTC, desc: FBI attributes to North Korea }
+  foot: 'Sources: CoinDesk (Oct 30, Nov 3), relaying Binance briefings. No published post-mortem yet.'
+  notes: |
+    EIP-7702 "Set Code for EOAs" (Final): a new transaction type (0x04) carries signed authorizations; each one makes an externally owned account (EOA) delegate execution to contract code until replaced. The spec itself says "There is no safe way to provide this interface": whoever gets that signature controls the wallet. Per Binance (via CoinDesk), the attacker used it to gain execution rights over a hot wallet, and with MPC no single key could revoke it.
+    The first public hint was "{{ n.art.binance.quote_laptop }}". The DevOps laptop is production.
+    Say it out loud: this comes from press coverage of a Binance briefing, not a post-mortem.
+
+bridge:
+  kicker: The soft skill we lack
+  title: You are the <em>bridge</em>
+  columns:
+    - { title: What, items: ["The asset, not the CVE ID", "Which service, which customers"] }
+    - { title: So what, items: ["Exposed? Exploited?", "KEV due date, if any"] }
+    - { title: Now what, items: ["Mitigation today", "Fix date", "The risk they accept"] }
+  foot: Fighting Fire with Fire
+  notes: |
+    Stakeholders don't speak CVSS, KEV or EPSS, and they are the most-phished people in the company.
+    Example: sshole is "Critical, in KEV", but glibc + PAM builds are not affected → "We checked: only our Alpine images. Mitigated today, rebuilt by Friday."
+    Teach them the lures: fake recruiters, urgent "security update" mails, fake AI tools.
+
+playbook:
+  kicker: Monday morning
+  title: The DevOps playbook
+  items:
+    - { topic: Prioritize by exposure, desc: "KEV + EPSS + your inventory; pull GitHub advisories" }
+    - { topic: Mitigate first, desc: "Then patch right" }
+    - { topic: Make rollout boring, desc: "SBOM → rebuild → staged rollout" }
+    - { topic: Ready at the lift, desc: "Never before" }
+    - { topic: Short-lived credentials, desc: "Rotation ≠ cleanup" }
+    - { topic: Translate risk, desc: "And train people on the lures" }
+
+end:
+  title: Thank you
+  subtitle: 'The project, scripts and slides are open and reproducible. Scan the QR code or use the links.'
+  links:
+    - { label: 'github.com/Odilhao/devopsdaysbsb2026', url: 'https://github.com/Odilhao/devopsdaysbsb2026' }
+    - { label: 'linkedin.com/in/odilonjunior', url: 'https://www.linkedin.com/in/odilonjunior/' }
+    - { label: 'github.com/Odilhao', url: 'https://github.com/Odilhao' }
+    - { label: 'odilon.dev', url: 'https://odilon.dev/' }
+  qr_url: 'https://github.com/Odilhao/devopsdaysbsb2026'
+  qr_caption: 'github.com/Odilhao/devopsdaysbsb2026'

@@ -1,0 +1,105 @@
+name: Build and publish slides
+
+# Data is fetched fresh on every run, so the charts always show the day the workflow ran.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Talk day (2026-11-14): rebuild at 06:00 and 10:00 Brasília time, so the charts show that day.
+    # Delete this block after the talk to freeze the deck.
+    - cron: "0 9 14 11 *"
+    - cron: "0 13 14 11 *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # raises the GitHub API rate limit for advisory lookups
+      SLIDES_BASE: /${{ github.event.repository.name }}/
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: slides/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          cd slides
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Fetch public data (CVE.org, CISA KEV, FIRST EPSS, GitHub advisories, NVD)
+        run: |
+          python scripts/fetch_kev_epss.py
+          python scripts/fetch_cvelist.py
+
+      - name: Scan a container image with two scanners
+        run: scripts/scan_images.sh
+
+      - name: Case-study signals
+        run: python scripts/fetch_case_studies.py
+
+      - name: Compute the numbers
+        run: python scripts/analyze.py
+
+      - name: Render the Markdown decks
+        run: python scripts/build_slidev.py
+
+      - name: Lint, build and export (Slidev)
+        working-directory: slides
+        run: |
+          npm run lint
+          npm run build
+          npm run export
+
+      - name: Assemble the site
+        run: |
+          for l in en pt-BR; do cp "slides/export/devopsdaysbsb2026-$l.pdf" "slides/dist/$l/"; done
+          cp site/index.html slides/dist/index.html
+          touch slides/dist/.nojekyll
+
+      - name: PDFs, rendered Markdown and CSVs as a CI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: slides-${{ github.run_id }}
+          path: |
+            slides/export/*.pdf
+            slides/slides.en.md
+            slides/slides.pt-BR.md
+            data/processed/*.csv
+          if-no-files-found: error
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: slides/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,285 @@
+{#-
+  One template, every language. Structure + layouts live here; all text lives in
+  i18n/<lang>.yaml (already rendered, so numbers are filled in), reachable as t.<slide>.<field>.
+  Numbers used directly here come from n (see scripts/build_slidev.py: load_data).
+  Filters: y = YAML-safe value, num/pct = locale numbers, month/day = locale dates.
+  Theme contract: https://github.com/zcag/tahta/blob/main/packages/theme/AGENTS.md
+-#}
+{%- macro notes(s) %}{% if s.get("notes") %}
+
+<!--
+{{ s.notes }}
+-->
+{% endif %}{% endmacro -%}
+---
+theme: slidev-theme-tahta
+title: {{ t.cover.title | y }}
+author: Odilon Junior
+mdc: true
+routerMode: hash
+download: true
+exportFilename: devopsdaysbsb2026-{{ lang }}
+themeConfig:
+  variant: boardroom
+  accent: "#EB6834"
+  lang: {{ lang | y }}
+layout: cover
+kicker: {{ t.cover.kicker | y }}
+subtitle: {{ t.cover.subtitle | y }}
+---
+{{ notes(t.cover) }}
+---
+layout: two-cols
+class: light
+title: {{ t.whoami.title | y }}
+foot: {{ t.whoami.foot | y }}
+---
+
+<Tags :items="{{ t.whoami.tags | js }}" />
+
+{% for b in t.whoami.bullets %}
+- {{ b }}
+{% endfor %}
+
+::right::
+
+<Terminal title="odilon@brasilia" :lines="{{ t.whoami.terminal | js }}" />
+
+{% for l in t.whoami.links %}
+- [{{ l.label }}]({{ l.url }})
+{% endfor %}
+{{ notes(t.whoami) }}
+---
+layout: section
+index: "01"
+kicker: {{ t.act1.kicker | y }}
+title: {{ t.act1.title | y }}
+subtitle: {{ t.act1.subtitle | y }}
+---
+
+---
+layout: chart
+kicker: {{ t.hook.kicker | y }}
+title: {{ t.hook.title | y }}
+note: {{ t.hook.note | y }}
+foot: {{ t.hook.foot | y }}
+chart:
+  type: area
+  height: 300px
+  categories: {{ n.crit_monthly | map(attribute="month") | map("month") | list | y }}
+  series:
+    - { name: {{ t.hook.series | y }}, data: {{ n.crit_monthly | map(attribute="critical") | list | y }} }
+---
+{{ notes(t.hook) }}
+---
+layout: feature
+class: light
+kicker: {{ t.glossary.kicker | y }}
+title: {{ t.glossary.title | y }}
+foot: {{ t.glossary.foot | y }}
+columns: 3
+features: {{ t.glossary.terms | y }}
+---
+{{ notes(t.glossary) }}
+---
+layout: stats
+class: light
+kicker: {{ t.curve.kicker | y }}
+title: {{ t.curve.title | y }}
+foot: {{ t.curve.foot | y }}
+columns: 4
+stats: {{ t.curve.stats | y }}
+---
+{{ notes(t.curve) }}
+---
+layout: vs
+class: light
+kicker: {{ t.bottleneck.kicker | y }}
+title: {{ t.bottleneck.title | y }}
+left: {{ t.bottleneck.left | y }}
+right: {{ t.bottleneck.right | y }}
+label: {{ t.bottleneck.label | y }}
+foot: {{ t.bottleneck.foot | y }}
+---
+{{ notes(t.bottleneck) }}
+---
+layout: section
+index: "02"
+kicker: {{ t.act2.kicker | y }}
+title: {{ t.act2.title | y }}
+subtitle: {{ t.act2.subtitle | y }}
+---
+
+---
+layout: default
+class: light
+kicker: {{ t.signals.kicker | y }}
+title: {{ t.signals.title | y }}
+foot: {{ t.signals.foot | y }}
+---
+
+{% set grid = [t.signals.head] %}
+{% for c in t.signals.cases %}
+{% set r = n.case[c.cve] %}
+{% set _ = grid.append([
+    c.label,
+    r.cna_cvss | num(1),
+    r.github_severity or t.signals.no_record,
+    r.epss | pct(1),
+    (r.kev_added | day) if r.kev_added else t.signals.not_in_kev,
+]) %}
+{% endfor %}
+<Grid :data="{{ grid | js }}" head />
+
+<Callout tone="warn" icon="lucide:crosshair">{{ t.signals.callout }}</Callout>
+{{ notes(t.signals) }}
+---
+layout: chart
+kicker: {{ t.exploitation.kicker | y }}
+title: {{ t.exploitation.title | y }}
+note: {{ t.exploitation.note | y }}
+foot: {{ t.exploitation.foot | y }}
+chart:
+  type: bar
+  unit: "%"
+  height: 290px
+  categories: {{ n.kev7_years | y }}
+  series:
+    - { name: {{ t.exploitation.series | y }}, data: {{ n.kev7_values | y }} }
+---
+{{ notes(t.exploitation) }}
+---
+layout: timeline
+kicker: {{ t.kernel.kicker | y }}
+title: {{ t.kernel.title | y }}
+foot: {{ t.kernel.foot | y }}
+events: {{ t.kernel.events | y }}
+---
+{{ notes(t.kernel) }}
+{% set feats = [] %}
+{% for p in t.mitigate.panels %}
+{% set _ = feats.append({"icon": p.icon, "title": p.title, "desc": p["items"] | join(" · ")}) %}
+{% endfor %}
+---
+layout: feature
+class: light
+kicker: {{ t.mitigate.kicker | y }}
+title: {{ t.mitigate.title | y }}
+foot: {{ t.mitigate.foot | y }}
+columns: 4
+features: {{ feats | y }}
+---
+{{ notes(t.mitigate) }}
+---
+layout: columns
+class: light
+kicker: {{ t.bundled.kicker | y }}
+title: {{ t.bundled.title | y }}
+foot: {{ t.bundled.foot | y }}
+columns: {{ t.bundled.columns | y }}
+---
+{{ notes(t.bundled) }}
+---
+layout: timeline
+class: light
+kicker: {{ t.puppet.kicker | y }}
+title: {{ (t.puppet.title ~ ('<br><span class="fs-lead dim font-normal">' ~ t.puppet.tagline ~ '</span>' if t.puppet.get("tagline") else "")) | y }}
+foot: {{ t.puppet.foot | y }}
+events: {{ t.puppet.events | y }}
+---
+{{ notes(t.puppet) }}
+---
+layout: steps
+class: light
+kicker: {{ t.rollout.kicker | y }}
+title: {{ t.rollout.title | y }}
+foot: {{ t.rollout.foot | y }}
+steps: {{ t.rollout.steps | y }}
+---
+{{ notes(t.rollout) }}
+---
+layout: columns
+class: light
+kicker: {{ t.embargo.kicker | y }}
+title: {{ t.embargo.title | y }}
+foot: {{ t.embargo.foot | y }}
+columns: {{ t.embargo.columns | y }}
+---
+{{ notes(t.embargo) }}
+---
+layout: steps
+class: light
+kicker: {{ t.liftday.kicker | y }}
+title: {{ t.liftday.title | y }}
+foot: {{ t.liftday.foot | y }}
+steps: {{ t.liftday.steps | y }}
+---
+{{ notes(t.liftday) }}
+---
+layout: section
+index: "03"
+kicker: {{ t.act3.kicker | y }}
+title: {{ t.act3.title | y }}
+subtitle: {{ t.act3.subtitle | y }}
+---
+
+---
+layout: steps
+class: light
+kicker: {{ t.blackoctober.kicker | y }}
+title: {{ t.blackoctober.title | y }}
+foot: {{ t.blackoctober.foot | y }}
+steps: {{ t.blackoctober.steps | y }}
+---
+{{ notes(t.blackoctober) }}
+---
+layout: stats
+kicker: {{ t.wfxloot.kicker | y }}
+title: {{ t.wfxloot.title | y }}
+foot: {{ t.wfxloot.foot | y }}
+columns: 3
+stats: {{ t.wfxloot.stats | y }}
+---
+{{ notes(t.wfxloot) }}
+---
+layout: timeline
+class: light
+kicker: {{ t.binance.kicker | y }}
+title: {{ t.binance.title | y }}
+foot: {{ t.binance.foot | y }}
+aside: {{ t.binance.aside | y }}
+events: {{ t.binance.events | y }}
+---
+{{ notes(t.binance) }}
+---
+layout: columns
+class: light
+kicker: {{ t.bridge.kicker | y }}
+title: {{ t.bridge.title | y }}
+foot: {{ t.bridge.foot | y }}
+columns: {{ t.bridge.columns | y }}
+---
+{{ notes(t.bridge) }}
+---
+layout: agenda
+class: light
+kicker: {{ t.playbook.kicker | y }}
+title: {{ t.playbook.title | y }}
+items: {{ t.playbook["items"] | y }}
+---
+{{ notes(t.playbook) }}
+---
+layout: two-cols
+title: {{ t.end.title | y }}
+---
+
+{{ t.end.subtitle }}
+
+{% for l in t.end.links %}
+- [{{ l.label }}]({{ l.url }})
+{% endfor %}
+
+::right::
+
+<Figure :src="{{ qr(t.end.qr_url) | js }}" alt="QR code" :caption="{{ t.end.qr_caption | js }}" />
+{{ notes(t.end) }}
